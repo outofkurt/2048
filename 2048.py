@@ -3,7 +3,7 @@ from random import randint
 class My_2048(object):
 
   def __init__(self):
-    self.view_contant = ['    ', '    ', '    ', '    ', ]
+    self.view_contant = ['    ', '    ', '    ', '    ']
     self.sort_list = ['', '', '', '']
 
   def get_view_str(self):
@@ -12,7 +12,8 @@ class My_2048(object):
       view_str += i
     return view_str
 
-
+  def set_list_char(self, str_list, post, popup_char):
+    return str_list[:post] + popup_char + str_list[post + 1:]
 
   def popup_post_char(self, post, popup_char):
     curr_post = 0
@@ -20,7 +21,7 @@ class My_2048(object):
       for j in xrange(len(self.view_contant[0])):
         if ' ' == self.view_contant[i][j]:
           if curr_post == post:
-            self.view_contant[i] = self.view_contant[i][:j] + popup_char + self.view_contant[i][j + 1:]
+            self.view_contant[i] = self.set_list_char(self.view_contant[i], j, popup_char)
             return
           curr_post += 1
 
@@ -28,7 +29,6 @@ class My_2048(object):
     post = randint(0, blank_count - 1)
     popup_char = ['a', 'b'][randint(0, 1)]
     self.popup_post_char(post, popup_char)
-    pass
 
   def do_popup_twice(self, blank_count):
     post = randint(0, blank_count - 1)
@@ -40,12 +40,8 @@ class My_2048(object):
     self.popup_post_char(post, popup_char)
     self.popup_post_char(post_2, popup_char_2)
 
-
-    pass
-
   def get_blank_count(self):
     view_str = self.get_view_str()
-    print view_str
     view_str_list = list(view_str)
     view_str_list.sort()
 
@@ -61,36 +57,32 @@ class My_2048(object):
     elif blank_count > 0:
       self.do_popup_single(blank_count)
 
-
-  def do_sort_line(self, l):
-    
+  def unsparse_line(self, l):
+    # print '**************'
+    # print self.sort_list[l]
     result = False
-
     no_blank_line = ''
     for i in self.sort_list[l]:
       if not ' ' == i:
         no_blank_line += i
-    if not no_blank_line == self.sort_list[l][:len(no_blank_line)]:
+    if (not no_blank_line == self.sort_list[l][:len(no_blank_line)] and
+     not 4 == len(no_blank_line)):
       self.sort_list[l] = no_blank_line + '   '[len(no_blank_line) - 1:]
       result = True
+    # print '**************'
+    # print self.sort_list[l]
+    return result
+
+  def do_sort_line(self, l):
+    self.unsparse_line(l)
 
     for i in xrange(len(self.sort_list[l]) - 1):
       curr_char = self.sort_list[l][i]
       if not ' ' == curr_char and curr_char == self.sort_list[l][i + 1]:
-        print 'plus**'
-        self.sort_list[l] = self.sort_list[l][0:i] + chr(ord(curr_char) + 1) + ' ' + self.sort_list[l][i + 2:]
-        result = False
+        self.sort_list[l] = self.set_list_char(self.sort_list[l], i, chr(ord(curr_char) + 1))
+        self.sort_list[l] = self.set_list_char(self.sort_list[l], i + 1, ' ')
 
-    no_blank_line = ''
-    for i in self.sort_list[l]:
-      if not ' ' == i:
-        no_blank_line += i
-    if not no_blank_line == self.sort_list[l][:len(no_blank_line)]:
-      self.sort_list[l] = no_blank_line + '   '[len(no_blank_line) - 1:]
-      result = True
-
-
-    return result
+    return self.unsparse_line(l)
 
   def do_sort_list(self):
     go_on_sort = False
@@ -107,8 +99,8 @@ class My_2048(object):
     self.do_sort_list()
     for i in xrange(len(self.view_contant)):
       for j in xrange(len(self.view_contant[0])):
-        self.view_contant[j] = self.view_contant[j][:i] + self.sort_list[i][j] + self.view_contant[j][i + 1:]
-
+        self.view_contant[j] = self.set_list_char(self.view_contant[j], i,
+         self.sort_list[i][j])
 
   def do_slide_down(self):
     self.sort_list = ['', '', '', '']
@@ -118,7 +110,8 @@ class My_2048(object):
     self.do_sort_list()
     for i in xrange(len(self.view_contant)):
       for j in xrange(len(self.view_contant[0])):
-        self.view_contant[j] = self.view_contant[j][:i] + self.sort_list[i][len(self.view_contant[0]) - 1 - j] + self.view_contant[j][i + 1:]
+        self.view_contant[j] = self.set_list_char(self.view_contant[j], i,
+          self.sort_list[i][len(self.view_contant[0]) - 1 - j])
 
   def do_slide_left(self):
     self.sort_list = ['', '', '', '']
@@ -136,8 +129,8 @@ class My_2048(object):
     self.do_sort_list()
     for i in xrange(len(self.view_contant)):
       for j in xrange(len(self.view_contant[0])):
-        self.view_contant[i] = self.view_contant[i][:j] + self.sort_list[i][len(self.view_contant[0]) - 1 - j] + self.view_contant[i][j + 1:]
-    pass
+        self.view_contant[i] = self.set_list_char(self.view_contant[i], j,
+          self.sort_list[i][len(self.view_contant[0]) - 1 - j])
 
   def do_slide(self, slide):
 
@@ -176,18 +169,19 @@ class My_2048(object):
 
       ''')
 
-    post_list = [33, 37, 41, 45, 81, 85, 89, 93, 129, 133, 137, 141, 177, 181, 185, 189]
+    post_list = []
+    for i in xrange(len(view)):
+      if '1' == view[i]:
+        post_list.append(i)
+
     if 16 == self.get_blank_count():
       self.do_popup_twice(16)
+
     view_str = self.get_view_str()
     for i in xrange(len(post_list)):
-      view = view[:post_list[i]] + view_str[i] + view[post_list[i] + 1:]
-
-
-
+      view = self.set_list_char(view, post_list[i], view_str[i])
     print view
-
-    print 'blank: ' + str(self.get_blank_count())
+    print 'up: i down: k left: j right: l'
 
     valid_input = False
     while(not valid_input):
@@ -197,11 +191,9 @@ class My_2048(object):
 
     self.do_slide(slide)
 
-
 def main():
   a = My_2048();
   a.dump()
-  pass
 
 if __name__ == '__main__':
    main() 
