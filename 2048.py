@@ -1,5 +1,33 @@
 from random import randint
 
+
+
+def get_color(str_line):
+  out_str_line = ''
+  key_list = ['c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n']
+  color_bg_list = [str(i) for i in [47, 43, 42, 46, 44, 45, 41, 40, 40, 40, 40, 40]]
+  color_fg_list = [str(i) for i in [30, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37]]
+  color_print_list = ['\033[;' + color_fg_list[i] + ';' + color_bg_list[i] + 'm' for i in xrange(len(key_list))]
+
+
+  bit_count = 0
+  for i in xrange(len(str_line) - 1):
+    if 0 != bit_count:
+      bit_count -= 1
+      continue
+
+    if str_line[i + 1] not in key_list:
+      out_str_line += str_line[i]
+      continue
+
+    for j in xrange(len(key_list)):
+      if key_list[j] == str_line[i + 1]:
+        out_str_line +=color_print_list[j] + ' ' + key_list[j] + ' \033[0m'
+        bit_count = 2
+        break
+
+  return out_str_line
+
 class My_2048(object):
 
   def __init__(self):
@@ -180,7 +208,11 @@ class My_2048(object):
     view_str = self.get_view_str()
     for i in xrange(len(post_list)):
       view = self.set_list_char(view, post_list[i], view_str[i])
+
+
+    view = get_color(view)
     print view
+
     print 'up: i down: k left: j right: l'
 
     valid_input = False
